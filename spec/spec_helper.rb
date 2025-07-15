@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
+# require "rails"
+require "decidim/core"
+require "decidim/dev"
+require "decidim/ai"
 require "decidim/ai_third_party"
+require 'webmock/rspec'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
