@@ -16,12 +16,12 @@ module Decidim
 
           class TimeoutError < ThirdPartyError; end
 
-          OUTPUT = %w(SPAM NOT_SPAM).freeze
+          OUTPUTS = %w(SPAM NOT_SPAM).freeze
 
           def initialize(options = {})
             super
-            @endpoint = Rails.application.secrets.dig(:decidim, :ai, :endpoint)
-            @secret = Rails.application.secrets.dig(:decidim, :ai, :secret)
+            @endpoint = Rails.application.secrets.dig(:decidim, :ai, :endpoint) || options[:endpoint]
+            @secret = Rails.application.secrets.dig(:decidim, :ai, :secret) || options[:secret]
             @options = options
           end
 
@@ -105,7 +105,7 @@ module Decidim
           attr_reader :options
 
           def valid_output_format?(output)
-            output.present? && output.is_a?(String) && output.in?(OUTPUT)
+            output.present? && output.is_a?(String) && output.in?(OUTPUTS)
           end
 
           def score_threshold

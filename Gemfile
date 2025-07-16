@@ -17,4 +17,5 @@ gem "decidim-ai", git: "https://github.com/OpenSourcePolitics/decidim-module-ai.
 group :test do
   gem "decidim-dev", "~> 0.29.0"
   gem "webmock"
+  gem "byebug"
 end

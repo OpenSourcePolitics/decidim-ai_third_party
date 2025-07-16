@@ -780,6 +780,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  byebug
   decidim-ai!
   decidim-ai_third_party!
   decidim-dev (~> 0.29.0)

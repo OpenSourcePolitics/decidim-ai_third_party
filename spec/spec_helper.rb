@@ -6,6 +6,7 @@ require "decidim/dev"
 require "decidim/ai"
 require "decidim/ai_third_party"
 require 'webmock/rspec'
+require "byebug"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
