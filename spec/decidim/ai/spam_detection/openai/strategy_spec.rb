@@ -22,7 +22,7 @@ RSpec.describe Decidim::Ai::SpamDetection::Openai::Strategy do
   let(:content) { "Test contribution input." }
 
   before do
-    allow(Rails).to receive(:application).and_return(double(secrets: { decidim: { ai: { endpoint:, secret: }}}))
+    allow(Rails).to receive(:application).and_return(double(secrets: { decidim: { ai: { endpoint:, secret: } } }))
     allow(Rails).to receive(:logger).and_return(double("Rails.logger", info: double(send: ""), error: nil))
     stub_request(:post, "https://example.com/api")
       .to_return(status: 200, body: "", headers: {})
@@ -85,7 +85,9 @@ RSpec.describe Decidim::Ai::SpamDetection::Openai::Strategy do
       end
 
       it "raises InvalidEntity error" do
-        expect { strategy.classify(content) }.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidEntity)
+        expect do
+          strategy.classify(content)
+        end.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidEntity)
         expect(strategy.instance_variable_get(:@score)).to eq(0)
       end
     end
@@ -94,7 +96,9 @@ RSpec.describe Decidim::Ai::SpamDetection::Openai::Strategy do
       before { allow(strategy).to receive(:valid_output_format?).and_return(false) }
 
       it "raises InvalidOutputFormat error" do
-        expect { strategy.classify(content) }.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidOutputFormat)
+        expect do
+          strategy.classify(content)
+        end.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidOutputFormat)
         expect(strategy.instance_variable_get(:@score)).to eq(0)
       end
     end
@@ -119,27 +123,27 @@ RSpec.describe Decidim::Ai::SpamDetection::Openai::Strategy do
   describe "#headers" do
     it "returns the correct headers" do
       expect(strategy.headers).to eq(
-                                    "Authorization" => "Bearer secret_key",
-                                    "Content-Type" => "application/json",
-                                    "Accept" => "application/json"
-                                  )
+        "Authorization" => "Bearer secret_key",
+        "Content-Type" => "application/json",
+        "Accept" => "application/json"
+      )
     end
   end
 
   describe "#payload" do
     it "returns the correct payload" do
       expect(strategy.payload(content)).to eq(
-                                             model: "model_name",
-                                             messages: [
-                                               { role: "system", content: "System message" },
-                                               { role: "user", content: }
-                                             ],
-                                             max_tokens: 100,
-                                             temperature: 0.7,
-                                             top_p: 0.9,
-                                             presence_penalty: 0,
-                                             stream: false
-                                           )
+        model: "model_name",
+        messages: [
+          { role: "system", content: "System message" },
+          { role: "user", content: }
+        ],
+        max_tokens: 100,
+        temperature: 0.7,
+        top_p: 0.9,
+        presence_penalty: 0,
+        stream: false
+      )
     end
   end
 
@@ -199,12 +203,14 @@ RSpec.describe Decidim::Ai::SpamDetection::Openai::Strategy do
     before { allow(Rails.logger).to receive(:send).and_return(logger_double) }
 
     it "logs a message with info level" do
-      expect(Rails.logger).to receive(:send).with(:info, "[decidim-ai] Decidim::Ai::SpamDetection::Openai::Strategy - Test message")
+      expect(Rails.logger).to receive(:send).with(:info,
+                                                  "[decidim-ai] Decidim::Ai::SpamDetection::Openai::Strategy - Test message")
       strategy.send(:system_log, "Test message")
     end
 
     it "logs a message with error level" do
-      expect(Rails.logger).to receive(:send).with(:error, "[decidim-ai] Decidim::Ai::SpamDetection::Openai::Strategy - Error message")
+      expect(Rails.logger).to receive(:send).with(:error,
+                                                  "[decidim-ai] Decidim::Ai::SpamDetection::Openai::Strategy - Error message")
       strategy.send(:system_log, "Error message", level: :error)
     end
   end

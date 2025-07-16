@@ -3,6 +3,7 @@
 module Decidim
   module Ai
     module SpamDetection
+      # ThirdPartyService is a service that interacts with third-party AI systems
       class ThirdPartyService < Decidim::Ai::SpamDetection::Service
         # classify calls the third party AI system to classify content
         # @param text [String] Content to classify

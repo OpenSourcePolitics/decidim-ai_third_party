@@ -16,7 +16,7 @@ module Decidim
 
           class TimeoutError < ThirdPartyError; end
 
-          OUTPUTS = %w(SPAM NOT_SPAM).freeze
+          OUTPUTS = %w[SPAM NOT_SPAM].freeze
 
           def initialize(options = {})
             super
@@ -40,7 +40,10 @@ module Decidim
             raise InvalidEntity, res unless res.is_a?(Net::HTTPSuccess)
 
             content = third_party_content(body)
-            raise InvalidOutputFormat, "Third party service response isn't valid JSON" unless valid_output_format?(content)
+            unless valid_output_format?(content)
+              raise InvalidOutputFormat,
+                    "Third party service response isn't valid JSON"
+            end
 
             @category = content.downcase
             system_log("Spam : #{score}.")

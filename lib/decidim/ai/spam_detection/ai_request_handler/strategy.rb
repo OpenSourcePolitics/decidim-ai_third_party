@@ -22,7 +22,10 @@ module Decidim
             system_log("classify - HTTP response body : #{body}")
             content = third_party_content(body)
 
-            raise InvalidOutputFormat, "Unexpected value received : '#{content}'. Expected to be in #{OUTPUTS}" unless valid_output_format?(content)
+            unless valid_output_format?(content)
+              raise InvalidOutputFormat,
+                    "Unexpected value received : '#{content}'. Expected to be in #{OUTPUTS}"
+            end
 
             @category = content.downcase
             score
@@ -36,22 +39,26 @@ module Decidim
 
             payload = payload(content, klass).to_json
             system_log("third_party_request - HTTP Request payload: #{payload}")
-            http = Net::HTTP.new(uri.host, uri.port)
-            http.use_ssl = true
-            request = Net::HTTP::Post.new(uri.to_s, "Content-Type" => "application/json", "Accept" => "application/json")
-            request["X-Auth-Token"] = @secret
-            request["X-Host"] = organization_host
-            request["X-Decidim-Host"] = organization_host
-            request["X-Decidim"] = organization_host
-            request["Host"] = organization_host
 
-            request.body = payload
-
+            http, request = http_request(uri:, organization_host:, content:, klass:)
             http.request(request)
           rescue StandardError => e
             system_log("third_party_request - Error: #{e.message}", level: :error)
             system_log("third_party_request - HTTP : (url/#{@endpoint}) (Host/#{organization_host})", level: :error)
             raise ThirdPartyError, "Error during request to third party service: #{e.message}"
+          end
+
+          def http_request(uri:, organization_host:, content:, klass:)
+            http = Net::HTTP.new(uri.host, uri.port)
+            http.use_ssl = true
+            request = Net::HTTP::Post.new(uri.to_s, "Content-Type" => "application/json",
+                                                    "Accept" => "application/json")
+            request["X-Auth-Token"] = @secret
+            request["X-Host"] = organization_host
+            request["X-Decidim-Host"] = organization_host
+            request.body = payload(content, klass).to_json
+
+            [http, request]
           end
 
           def parse_http_response(response)
