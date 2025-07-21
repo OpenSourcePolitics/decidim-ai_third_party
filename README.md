@@ -1,39 +1,50 @@
 # Decidim::AiThirdParty
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/decidim/ai_third_party`. To experiment with that code, run `bin/console` for an interactive prompt.
+Extends the Decidim module AI to support third-party AI providers. This gem helps to implement any OpenAI compatible API providers. 
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
 
+### Add the gem dependency
 Install the gem and add to the application's Gemfile by executing:
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+    $ bundle add decidim-ai
+    $ bundle add decidim-ai_third_party
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+### Add the required jobs manually
+Once gem is installed in the Decidim application, you need to add manually the two custom jobs `Decidim::Ai::SpamDetection::ThirdParty::GenericSpamAnalyzerJob` and `Decidim::Ai::SpamDetection::ThirdParty::UserSpamAnalyzerJob`
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+For generic spam detection:
+* Create a new file `app/jobs/decidim/ai/spam_detection/third_party/generic_spam_analyzer_job.rb`
+* Copy the content of file ./examples/generic_spam_analyzer_job.rb into the new file
 
-## Usage
+For user spam detection:
+* Create a new file `app/jobs/decidim/ai/spam_detection/third_party/user_spam_analyzer_job.rb`
+* Copy the content of file ./examples/user_spam_analyzer_job.rb into the new file
 
-TODO: Write usage instructions here
+### Configure AI module through the Decidim initializer
 
-## Development
+You need to configure the AI module in the Decidim initializer file `config/initializers/decidim_ai.rb`. An initializer example is available at ./examples/decidim_ai.rb
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+### Add environment variables in Rails secrets
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+You need to add the environment variables in the Rails secrets file `config/secrets.yml` :
 
-## Contributing
+```yaml
+decidim_default:
+  ai:
+      endpoint: <%= Decidim::Env.new("DECIDIM_AI_ENDPOINT").to_s %>
+      secret: <%= Decidim::Env.new("DECIDIM_AI_SECRET").to_s %>
+      basic_auth: <%= Decidim::Env.new("DECIDIM_AI_BASIC_AUTH").to_s %>
+      reporting_user_email: <%= Decidim::Env.new("DECIDIM_AI_REPORTING_USER_EMAIL").to_s %>
+      resource_score_threshold: <%= Decidim::Env.new("DECIDIM_AI_RESOURCE_SCORE_THRESHOLD", 0.5).to_f %>
+      user_score_threshold: <%= Decidim::Env.new("DECIDIM_AI_USER_SCORE_THRESHOLD", 0.5).to_f %>
+```
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/decidim-ai_third_party. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/decidim-ai_third_party/blob/main/CODE_OF_CONDUCT.md).
+### Create the reporting user
 
-## License
+?? This step is very important, if the user `Decidim::Ai::SpamDetection.reporting_user_email` does not exist, it will crash quietly when the spam detection job is executed.
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Decidim::AiThirdParty project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/decidim-ai_third_party/blob/main/CODE_OF_CONDUCT.md).
+```bash
+DECIDIM_AI_REPORTING_USER_EMAIL="<REPORTING_USER_TO_CREATE>" bundle exec rake decidim:ai:spam:create_reporting_user
+```
