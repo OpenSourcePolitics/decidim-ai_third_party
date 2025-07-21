@@ -9,6 +9,14 @@ module Decidim
         # - AiRequestHandler application : https://github.com/OpenSourcePolitics/ai_request_handler/
         # - Langfuse endpoint : https://github.com/langfuse/langfuse
         class Strategy < Decidim::Ai::SpamDetection::Openai::Strategy
+          def initialize(options = {})
+            super
+            @endpoint = Rails.application.secrets.dig(:decidim, :ai, :endpoint) || options[:endpoint]
+            @secret = Rails.application.secrets.dig(:decidim, :ai, :secret) || options[:secret]
+            @basic_auth = Rails.application.secrets.dig(:decidim, :ai, :basic_auth) || options[:basic_auth]
+            @options = options
+          end
+
           # classify calls the third party AI system to classify content
           # @param content [String] Content to classify
           # @param organization_host [String] Decidim host
@@ -52,8 +60,9 @@ module Decidim
             http = Net::HTTP.new(uri.host, uri.port)
             http.use_ssl = true
             request = Net::HTTP::Post.new(uri.to_s, "Content-Type" => "application/json",
-                                                    "Accept" => "application/json")
-            request["X-Auth-Token"] = @secret
+                                          "Accept" => "application/json")
+            request["X-Auth-Token"] = @secret if @secret.present?
+            request["Authorization"] = "Basic #{Base64.strict_encode64(@basic_auth)}" if @basic_auth.present?
             request["X-Host"] = organization_host
             request["X-Decidim-Host"] = organization_host
             request.body = payload(content, klass).to_json
