@@ -60,7 +60,7 @@ module Decidim
             http = Net::HTTP.new(uri.host, uri.port)
             http.use_ssl = true
             request = Net::HTTP::Post.new(uri.to_s, "Content-Type" => "application/json",
-                                          "Accept" => "application/json")
+                                                    "Accept" => "application/json")
             request["X-Auth-Token"] = @secret if @secret.present?
             request["Authorization"] = "Basic #{Base64.strict_encode64(@basic_auth)}" if @basic_auth.present?
             request["X-Host"] = organization_host

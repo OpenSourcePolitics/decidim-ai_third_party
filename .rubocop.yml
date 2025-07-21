@@ -20,4 +20,8 @@ Layout/LineLength:
   Enabled: false
 
 Metrics/AbcSize:
-  CountRepeatedAttributes: false
+  Enabled: false
+
+Style/Documentation:
+  Exclude:
+    - 'examples/*'
